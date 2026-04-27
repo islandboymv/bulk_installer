@@ -21,27 +21,49 @@ A Windows batch script that silently installs a standard set of apps in one run:
 
 ### Quick download with curl
 
-Windows 10 (1803+) and Windows 11 ship with `curl.exe`. The short URL `https://is.gd/mindco_install` redirects to the raw script on this repo. From an **elevated** Command Prompt:
+Windows 10 (1803+) and Windows 11 ship with `curl.exe`. The short URL `https://is.gd/mindco_install` redirects to the raw script on this repo.
+
+> **Recommended: use Command Prompt (cmd), not PowerShell.** In PowerShell, `curl` is an alias for `Invoke-WebRequest`, which uses different parameter names — `curl -Lo …` will fail with `A parameter cannot be found that matches name 'Lo'`. If you must use PowerShell, see the PowerShell section below.
+
+#### Command Prompt (recommended)
+
+Open **cmd** as Administrator, then:
 
 ```cmd
 curl -Lo install_apps.bat https://is.gd/mindco_install
 install_apps.bat
 ```
 
-From an **elevated** PowerShell window, call `curl.exe` explicitly so it doesn't get aliased to `Invoke-WebRequest`:
+One-liner — download and run:
+
+```cmd
+curl -Lo install_apps.bat https://is.gd/mindco_install && install_apps.bat
+```
+
+#### PowerShell
+
+In PowerShell you must call `curl.exe` (with the `.exe`) so it doesn't get aliased to `Invoke-WebRequest`:
 
 ```powershell
 curl.exe -Lo install_apps.bat https://is.gd/mindco_install
 .\install_apps.bat
 ```
 
-One-liner (Command Prompt, elevated) — download and run:
+One-liner — Windows PowerShell 5.1 (the default on Windows 10/11) does not support `&&`, so use `;` with a success check:
 
-```cmd
-curl -Lo install_apps.bat https://is.gd/mindco_install && install_apps.bat
+```powershell
+curl.exe -Lo install_apps.bat https://is.gd/mindco_install; if ($?) { .\install_apps.bat }
 ```
 
-`-L` follows the is.gd redirect to GitHub; `-o install_apps.bat` forces the saved filename (without it, curl would name the file after the short URL, missing the `.bat` extension).
+In PowerShell 7+, the cmd-style `&&` form also works (with `curl.exe` and `.\`):
+
+```powershell
+curl.exe -Lo install_apps.bat https://is.gd/mindco_install && .\install_apps.bat
+```
+
+#### Flag reference
+
+`-L` follows the is.gd redirect to GitHub; `-o install_apps.bat` forces the saved filename (without it, curl would name the file after the short URL, missing the `.bat` extension and leaving Windows unable to execute it).
 
 ## What the script does
 
