@@ -28,117 +28,62 @@ echo   Log: %LOG_FILE%
 if "%HAS_WINGET%"=="1" (
     echo   winget: available
 ) else (
-    echo   winget: NOT available - Chrome/AnyDesk/Acrobat will be skipped
-    echo   Install "App Installer" from the Microsoft Store to enable winget.
+    echo   winget: NOT available - falling back to direct downloads.
 )
 echo ============================================================
 echo.
 
 :: -----------------------------------------
-::  1. Google Chrome (winget)
+::  1. Google Chrome
 :: -----------------------------------------
-echo [1/4] Installing Google Chrome via winget...
-echo [1/4] Google Chrome - winget install started >> "%LOG_FILE%"
+echo [1/4] Installing Google Chrome...
+echo [1/4] Google Chrome - install started >> "%LOG_FILE%"
 
 if "%HAS_WINGET%"=="1" (
     winget install -e --id Google.Chrome --silent --accept-package-agreements --accept-source-agreements
-    set "EC=!errorLevel!"
-    if !EC! equ 0 (
-        echo [OK] Chrome done.
-        echo [OK] Chrome installed >> "%LOG_FILE%"
-    ) else if !EC! equ -1978335135 (
-        echo [OK] Chrome already installed.
-        echo [OK] Chrome already installed >> "%LOG_FILE%"
-    ) else if !EC! equ -1978335189 (
-        echo [OK] Chrome already up to date.
-        echo [OK] Chrome already up to date >> "%LOG_FILE%"
-    ) else (
-        echo [WARN] winget exited with code !EC!.
-        echo [WARN] winget Chrome exit code !EC! >> "%LOG_FILE%"
-    )
+    call :ReportWinget "Chrome" !errorLevel!
 ) else (
-    echo [SKIP] winget not available. Download from https://www.google.com/chrome/
-    echo [SKIP] Chrome - winget unavailable >> "%LOG_FILE%"
+    call :DirectDownload "https://dl.google.com/chrome/install/ChromeStandaloneSetup64.exe" "chrome_installer.exe" "/silent /install" "Chrome"
 )
 echo.
 
 :: -----------------------------------------
 ::  2. IdeaShare (direct download - not in winget)
 :: -----------------------------------------
-echo [2/4] Downloading IdeaShare...
-echo [2/4] IdeaShare - Download started >> "%LOG_FILE%"
+echo [2/4] Installing IdeaShare...
+echo [2/4] IdeaShare - install started >> "%LOG_FILE%"
 
-powershell -NoProfile -Command "[Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12; $url='https://www.ideashare.us/download/IdeaShareSetup.exe'; $out='%TEMP_DIR%\IdeaShareSetup.exe'; $wc=New-Object System.Net.WebClient; Register-ObjectEvent -InputObject $wc -EventName DownloadProgressChanged -Action {Write-Host ('  ' + $EventArgs.ProgressPercentage + '%% - ' + [math]::Round($EventArgs.BytesReceived/1KB) + ' KB')} | Out-Null; Register-ObjectEvent -InputObject $wc -EventName DownloadFileCompleted -Action {Write-Host 'Download complete.'} | Out-Null; $wc.DownloadFileAsync([uri]$url,$out); while($wc.IsBusy){Start-Sleep -Milliseconds 200}"
-
-if exist "%TEMP_DIR%\IdeaShareSetup.exe" (
-    echo Installing IdeaShare...
-    start /wait "" "%TEMP_DIR%\IdeaShareSetup.exe" /S
-    if !errorLevel! equ 0 (
-        echo [OK] IdeaShare done.
-        echo [OK] IdeaShare installed >> "%LOG_FILE%"
-    ) else (
-        echo [WARN] IdeaShare installer exited with code !errorLevel!.
-        echo [WARN] IdeaShare installer exit code !errorLevel! >> "%LOG_FILE%"
-    )
-) else (
-    echo [FAIL] IdeaShare download failed. Visit https://www.ideashare.us
-    echo [FAIL] IdeaShare download failed >> "%LOG_FILE%"
-)
+call :DirectDownload "https://www.ideashare.us/download/IdeaShareSetup.exe" "IdeaShareSetup.exe" "/S" "IdeaShare"
 echo.
 
 :: -----------------------------------------
-::  3. AnyDesk (winget)
+::  3. AnyDesk
 :: -----------------------------------------
-echo [3/4] Installing AnyDesk via winget...
-echo [3/4] AnyDesk - winget install started >> "%LOG_FILE%"
+echo [3/4] Installing AnyDesk...
+echo [3/4] AnyDesk - install started >> "%LOG_FILE%"
 
 if "%HAS_WINGET%"=="1" (
     winget install -e --id AnyDeskSoftwareGmbH.AnyDesk --silent --accept-package-agreements --accept-source-agreements
-    set "EC=!errorLevel!"
-    if !EC! equ 0 (
-        echo [OK] AnyDesk done.
-        echo [OK] AnyDesk installed >> "%LOG_FILE%"
-    ) else if !EC! equ -1978335135 (
-        echo [OK] AnyDesk already installed.
-        echo [OK] AnyDesk already installed >> "%LOG_FILE%"
-    ) else if !EC! equ -1978335189 (
-        echo [OK] AnyDesk already up to date.
-        echo [OK] AnyDesk already up to date >> "%LOG_FILE%"
-    ) else (
-        echo [WARN] winget exited with code !EC!.
-        echo [WARN] winget AnyDesk exit code !EC! >> "%LOG_FILE%"
-    )
+    call :ReportWinget "AnyDesk" !errorLevel!
 ) else (
-    echo [SKIP] winget not available. Download from https://anydesk.com
-    echo [SKIP] AnyDesk - winget unavailable >> "%LOG_FILE%"
+    call :DirectDownload "https://download.anydesk.com/AnyDesk.exe" "AnyDesk.exe" "--install ""C:\Program Files (x86)\AnyDesk"" --start-with-win --create-shortcuts --create-desktop-icon --silent" "AnyDesk"
 )
 echo.
 
 :: -----------------------------------------
-::  4. Adobe Acrobat Reader (winget)
+::  4. Adobe Acrobat Reader
 :: -----------------------------------------
-echo [4/4] Installing Adobe Acrobat Reader via winget...
-echo [4/4] Adobe Acrobat Reader - winget install started >> "%LOG_FILE%"
+echo [4/4] Installing Adobe Acrobat Reader...
+echo [4/4] Adobe Acrobat Reader - install started >> "%LOG_FILE%"
 
 if "%HAS_WINGET%"=="1" (
     winget install -e --id Adobe.Acrobat.Reader.64-bit --silent --accept-package-agreements --accept-source-agreements
-    set "EC=!errorLevel!"
-    if !EC! equ 0 (
-        echo [OK] Adobe Acrobat Reader done.
-        echo [OK] Adobe Acrobat Reader installed >> "%LOG_FILE%"
-    ) else if !EC! equ -1978335135 (
-        echo [OK] Adobe Acrobat Reader already installed.
-        echo [OK] Adobe Acrobat Reader already installed >> "%LOG_FILE%"
-    ) else if !EC! equ -1978335189 (
-        echo [OK] Adobe Acrobat Reader already up to date.
-        echo [OK] Adobe Acrobat Reader already up to date >> "%LOG_FILE%"
-    ) else (
-        echo [WARN] winget exited with code !EC!.
-        echo [WARN] winget Acrobat exit code !EC! >> "%LOG_FILE%"
-    )
+    call :ReportWinget "Adobe Acrobat Reader" !errorLevel!
 ) else (
-    echo [SKIP] winget not available. Download from https://get.adobe.com/reader
-    echo [SKIP] Acrobat - winget unavailable >> "%LOG_FILE%"
+    :: Adobe rotates this URL roughly quarterly. If it 404s, find the latest at
+    :: https://www.adobe.com/devnet-docs/acrobatetk/tools/ReleaseNotesDC/index.html
+    :: and update the version segments below (both occurrences).
+    call :DirectDownload "https://ardownload2.adobe.com/pub/adobe/acrobat/win/AcrobatDC/2400520320/AcroRdrDC2400520320_en_US.exe" "AcrobatReader.exe" "/sAll /rs /msi EULA_ACCEPT=YES" "Adobe Acrobat Reader"
 )
 echo.
 
@@ -150,8 +95,77 @@ rmdir /s /q "%TEMP_DIR%" >nul 2>&1
 
 echo.
 echo ============================================================
-echo   All done! Log saved to: %LOG_FILE%
+echo   All done^^! Log saved to: %LOG_FILE%
 echo ============================================================
 echo.
 pause
 endlocal
+exit /b 0
+
+
+:: =============================================
+::   Subroutines
+:: =============================================
+
+:: ReportWinget AppName ExitCode
+:ReportWinget
+set "_APP=%~1"
+set "_EC=%~2"
+if "!_EC!"=="0" (
+    echo [OK] !_APP! done.
+    echo [OK] !_APP! installed >> "%LOG_FILE%"
+) else if "!_EC!"=="-1978335135" (
+    echo [OK] !_APP! already installed.
+    echo [OK] !_APP! already installed >> "%LOG_FILE%"
+) else if "!_EC!"=="-1978335189" (
+    echo [OK] !_APP! already up to date.
+    echo [OK] !_APP! already up to date >> "%LOG_FILE%"
+) else (
+    echo [WARN] winget !_APP! exited with code !_EC!.
+    echo [WARN] winget !_APP! exit code !_EC! >> "%LOG_FILE%"
+)
+exit /b 0
+
+
+:: DirectDownload URL OutFile InstallerArgs AppName
+:DirectDownload
+set "_URL=%~1"
+set "_OUT=%TEMP_DIR%\%~2"
+set "_ARGS=%~3"
+set "_APP=%~4"
+
+echo Downloading !_APP!...
+powershell -NoProfile -Command "[Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12; try{(New-Object System.Net.WebClient).DownloadFile('!_URL!','!_OUT!'); exit 0}catch{Write-Host ('  ERROR: ' + $_.Exception.Message); exit 1}"
+if !errorLevel! neq 0 (
+    echo [FAIL] !_APP! download failed.
+    echo [FAIL] !_APP! download failed >> "%LOG_FILE%"
+    exit /b 1
+)
+
+if not exist "!_OUT!" (
+    echo [FAIL] !_APP! download failed ^(file missing^).
+    echo [FAIL] !_APP! download missing >> "%LOG_FILE%"
+    exit /b 1
+)
+
+:: Verify the download is a valid Windows PE executable (starts with MZ).
+:: Catches the common case of an HTML error page being saved with a .exe name.
+powershell -NoProfile -Command "try{$b=[IO.File]::ReadAllBytes('!_OUT!'); if($b.Length -lt 2 -or $b[0] -ne 0x4D -or $b[1] -ne 0x5A){exit 1}else{exit 0}}catch{exit 1}"
+if !errorLevel! neq 0 (
+    echo [FAIL] !_APP! download is not a valid Windows executable.
+    echo         The URL may have returned an HTML error page. Check the URL or your network.
+    echo [FAIL] !_APP! download not a valid PE >> "%LOG_FILE%"
+    exit /b 1
+)
+
+echo Installing !_APP!...
+start /wait "" "!_OUT!" !_ARGS!
+set "_IEC=!errorLevel!"
+if "!_IEC!"=="0" (
+    echo [OK] !_APP! done.
+    echo [OK] !_APP! installed >> "%LOG_FILE%"
+) else (
+    echo [WARN] !_APP! installer exited with code !_IEC!.
+    echo [WARN] !_APP! installer exit code !_IEC! >> "%LOG_FILE%"
+)
+exit /b 0
