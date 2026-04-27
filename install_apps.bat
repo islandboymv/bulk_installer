@@ -1,4 +1,4 @@
-@echo on
+@echo off
 setlocal EnableDelayedExpansion
 
 :: Check for Administrator privileges
@@ -135,10 +135,19 @@ set "_ARGS=%~3"
 set "_APP=%~4"
 
 echo Downloading !_APP!...
-powershell -NoProfile -Command "[Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12; try{(New-Object System.Net.WebClient).DownloadFile('!_URL!','!_OUT!'); exit 0}catch{Write-Host ('  ERROR: ' + $_.Exception.Message); exit 1}"
-if !errorLevel! neq 0 (
-    echo [FAIL] !_APP! download failed.
-    echo [FAIL] !_APP! download failed >> "%LOG_FILE%"
+powershell -NoProfile -Command "[Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12; $u='!_URL!'; $o='!_OUT!'; $wc=New-Object System.Net.WebClient; $global:dlOk=$false; $global:lastTime=Get-Date; $global:lastPct=-5; Register-ObjectEvent -InputObject $wc -EventName DownloadProgressChanged -Action {$global:lastTime=Get-Date; if($EventArgs.ProgressPercentage -ge $global:lastPct + 5){$global:lastPct=$EventArgs.ProgressPercentage; Write-Host ('  ' + $EventArgs.ProgressPercentage.ToString().PadLeft(3) + '%% | ' + [math]::Round($EventArgs.BytesReceived/1MB,1) + ' MB')}} | Out-Null; Register-ObjectEvent -InputObject $wc -EventName DownloadFileCompleted -Action {if($EventArgs.Error){Write-Host ('  ERROR: ' + $EventArgs.Error.Message); $global:dlOk=$false}elseif($EventArgs.Cancelled){$global:dlOk=$false}else{Write-Host '  Download complete.'; $global:dlOk=$true}} | Out-Null; $start=Get-Date; $wc.DownloadFileAsync([uri]$u,$o); while($wc.IsBusy){Start-Sleep -Milliseconds 500; $e=((Get-Date)-$start).TotalSeconds; $s=((Get-Date)-$global:lastTime).TotalSeconds; if($e -gt 600){Write-Host '  ABORT: total download timeout (600s) exceeded.'; $wc.CancelAsync(); Start-Sleep -Seconds 2; exit 2}; if($s -gt 60){Write-Host '  ABORT: no progress for 60 seconds.'; $wc.CancelAsync(); Start-Sleep -Seconds 2; exit 3}}; Start-Sleep -Milliseconds 1000; if($global:dlOk){exit 0}else{exit 1}"
+set "_DLEC=!errorLevel!"
+if !_DLEC! neq 0 (
+    if !_DLEC! equ 2 (
+        echo [FAIL] !_APP! download timed out after 10 minutes.
+        echo [FAIL] !_APP! download timeout >> "%LOG_FILE%"
+    ) else if !_DLEC! equ 3 (
+        echo [FAIL] !_APP! download stalled - no progress for 60 seconds.
+        echo [FAIL] !_APP! download stalled >> "%LOG_FILE%"
+    ) else (
+        echo [FAIL] !_APP! download failed.
+        echo [FAIL] !_APP! download failed >> "%LOG_FILE%"
+    )
     exit /b 1
 )
 
