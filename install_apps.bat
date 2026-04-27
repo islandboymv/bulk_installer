@@ -53,7 +53,7 @@ echo.
 echo [2/4] Installing IdeaShare...
 echo [2/4] IdeaShare - install started >> "%LOG_FILE%"
 
-call :DirectDownload "https://www.ideashare.us/download/IdeaShareSetup.exe" "IdeaShareSetup.exe" "/S" "IdeaShare"
+call :DirectDownload "https://res-static.hc-cdn.cn/cloudbu-site/china/zh-cn/prudout/ec/share/V7.06.1.71/IdeaShare_Setup.exe" "IdeaShare_Setup.exe" "/S" "IdeaShare"
 echo.
 
 :: -----------------------------------------
