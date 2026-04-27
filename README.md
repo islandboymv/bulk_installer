@@ -21,27 +21,27 @@ A Windows batch script that silently installs a standard set of apps in one run:
 
 ### Quick download with curl
 
-Windows 10 (1803+) and Windows 11 ship with `curl.exe`. From an **elevated** Command Prompt:
+Windows 10 (1803+) and Windows 11 ship with `curl.exe`. The short URL `https://is.gd/mindco_install` redirects to the raw script on this repo. From an **elevated** Command Prompt:
 
 ```cmd
-curl -L -o install_apps.bat https://raw.githubusercontent.com/islandboymv/bulk_installer/main/install_apps.bat
+curl -Lo install_apps.bat https://is.gd/mindco_install
 install_apps.bat
 ```
 
 From an **elevated** PowerShell window, call `curl.exe` explicitly so it doesn't get aliased to `Invoke-WebRequest`:
 
 ```powershell
-curl.exe -L -o install_apps.bat https://raw.githubusercontent.com/islandboymv/bulk_installer/main/install_apps.bat
+curl.exe -Lo install_apps.bat https://is.gd/mindco_install
 .\install_apps.bat
 ```
 
 One-liner (Command Prompt, elevated) — download and run:
 
 ```cmd
-curl -LO https://github.com/islandboymv/bulk_installer/raw/main/install_apps.bat && install_apps.bat
+curl -Lo install_apps.bat https://is.gd/mindco_install && install_apps.bat
 ```
 
-`-L` follows redirects; `-O` (capital) saves under the remote filename.
+`-L` follows the is.gd redirect to GitHub; `-o install_apps.bat` forces the saved filename (without it, curl would name the file after the short URL, missing the `.bat` extension).
 
 ## What the script does
 
@@ -54,8 +54,8 @@ curl -LO https://github.com/islandboymv/bulk_installer/raw/main/install_apps.bat
 
 | Tag    | Meaning                                                                 |
 | ------ | ----------------------------------------------------------------------- |
-| `[OK]`   | Installer reported success.                                             |
-| `[WARN]` | Installer returned a non-zero exit code (often "already installed").    |
+| `[OK]`   | Installer reported success, or winget reports the app is already installed / up to date. |
+| `[WARN]` | Installer returned an unexpected non-zero exit code.                    |
 | `[FAIL]` | Download failed or required tooling is missing.                         |
 | `[SKIP]` | winget unavailable; the winget-based step was skipped.                  |
 
