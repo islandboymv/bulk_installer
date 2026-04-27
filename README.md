@@ -38,10 +38,10 @@ curl.exe -L -o install_apps.bat https://raw.githubusercontent.com/islandboymv/bu
 One-liner (Command Prompt, elevated) — download and run:
 
 ```cmd
-curl -L -o "%TEMP%\install_apps.bat" https://raw.githubusercontent.com/islandboymv/bulk_installer/main/install_apps.bat && "%TEMP%\install_apps.bat"
+curl -LO https://github.com/islandboymv/bulk_installer/raw/main/install_apps.bat && install_apps.bat
 ```
 
-The `-L` flag follows GitHub's redirect from `raw.githubusercontent.com` to the underlying CDN.
+`-L` follows redirects; `-O` (capital) saves under the remote filename.
 
 ## What the script does
 

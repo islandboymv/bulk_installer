@@ -42,12 +42,19 @@ echo [1/4] Google Chrome - winget install started >> "%LOG_FILE%"
 
 if "%HAS_WINGET%"=="1" (
     winget install -e --id Google.Chrome --silent --accept-package-agreements --accept-source-agreements
-    if !errorLevel! equ 0 (
+    set "EC=!errorLevel!"
+    if !EC! equ 0 (
         echo [OK] Chrome done.
         echo [OK] Chrome installed >> "%LOG_FILE%"
+    ) else if !EC! equ -1978335135 (
+        echo [OK] Chrome already installed.
+        echo [OK] Chrome already installed >> "%LOG_FILE%"
+    ) else if !EC! equ -1978335189 (
+        echo [OK] Chrome already up to date.
+        echo [OK] Chrome already up to date >> "%LOG_FILE%"
     ) else (
-        echo [WARN] winget exited with code !errorLevel! ^(may already be installed^).
-        echo [WARN] winget Chrome exit code !errorLevel! >> "%LOG_FILE%"
+        echo [WARN] winget exited with code !EC!.
+        echo [WARN] winget Chrome exit code !EC! >> "%LOG_FILE%"
     )
 ) else (
     echo [SKIP] winget not available. Download from https://www.google.com/chrome/
@@ -87,12 +94,19 @@ echo [3/4] AnyDesk - winget install started >> "%LOG_FILE%"
 
 if "%HAS_WINGET%"=="1" (
     winget install -e --id AnyDeskSoftwareGmbH.AnyDesk --silent --accept-package-agreements --accept-source-agreements
-    if !errorLevel! equ 0 (
+    set "EC=!errorLevel!"
+    if !EC! equ 0 (
         echo [OK] AnyDesk done.
         echo [OK] AnyDesk installed >> "%LOG_FILE%"
+    ) else if !EC! equ -1978335135 (
+        echo [OK] AnyDesk already installed.
+        echo [OK] AnyDesk already installed >> "%LOG_FILE%"
+    ) else if !EC! equ -1978335189 (
+        echo [OK] AnyDesk already up to date.
+        echo [OK] AnyDesk already up to date >> "%LOG_FILE%"
     ) else (
-        echo [WARN] winget exited with code !errorLevel! ^(may already be installed^).
-        echo [WARN] winget AnyDesk exit code !errorLevel! >> "%LOG_FILE%"
+        echo [WARN] winget exited with code !EC!.
+        echo [WARN] winget AnyDesk exit code !EC! >> "%LOG_FILE%"
     )
 ) else (
     echo [SKIP] winget not available. Download from https://anydesk.com
@@ -108,12 +122,19 @@ echo [4/4] Adobe Acrobat Reader - winget install started >> "%LOG_FILE%"
 
 if "%HAS_WINGET%"=="1" (
     winget install -e --id Adobe.Acrobat.Reader.64-bit --silent --accept-package-agreements --accept-source-agreements
-    if !errorLevel! equ 0 (
+    set "EC=!errorLevel!"
+    if !EC! equ 0 (
         echo [OK] Adobe Acrobat Reader done.
         echo [OK] Adobe Acrobat Reader installed >> "%LOG_FILE%"
+    ) else if !EC! equ -1978335135 (
+        echo [OK] Adobe Acrobat Reader already installed.
+        echo [OK] Adobe Acrobat Reader already installed >> "%LOG_FILE%"
+    ) else if !EC! equ -1978335189 (
+        echo [OK] Adobe Acrobat Reader already up to date.
+        echo [OK] Adobe Acrobat Reader already up to date >> "%LOG_FILE%"
     ) else (
-        echo [WARN] winget exited with code !errorLevel! ^(may already be installed^).
-        echo [WARN] winget Acrobat exit code !errorLevel! >> "%LOG_FILE%"
+        echo [WARN] winget exited with code !EC!.
+        echo [WARN] winget Acrobat exit code !EC! >> "%LOG_FILE%"
     )
 ) else (
     echo [SKIP] winget not available. Download from https://get.adobe.com/reader
