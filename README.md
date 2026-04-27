@@ -19,6 +19,30 @@ A Windows batch script that silently installs a standard set of apps in one run:
 2. Right-click it and choose **Run as administrator**.
 3. Wait for all four sections to finish. A log is written to `%USERPROFILE%\Desktop\install_log.txt`.
 
+### Quick download with curl
+
+Windows 10 (1803+) and Windows 11 ship with `curl.exe`. From an **elevated** Command Prompt:
+
+```cmd
+curl -L -o install_apps.bat https://raw.githubusercontent.com/islandboymv/bulk_installer/main/install_apps.bat
+install_apps.bat
+```
+
+From an **elevated** PowerShell window, call `curl.exe` explicitly so it doesn't get aliased to `Invoke-WebRequest`:
+
+```powershell
+curl.exe -L -o install_apps.bat https://raw.githubusercontent.com/islandboymv/bulk_installer/main/install_apps.bat
+.\install_apps.bat
+```
+
+One-liner (Command Prompt, elevated) — download and run:
+
+```cmd
+curl -L -o "%TEMP%\install_apps.bat" https://raw.githubusercontent.com/islandboymv/bulk_installer/main/install_apps.bat && "%TEMP%\install_apps.bat"
+```
+
+The `-L` flag follows GitHub's redirect from `raw.githubusercontent.com` to the underlying CDN.
+
 ## What the script does
 
 1. Verifies it's running elevated.
