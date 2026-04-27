@@ -63,7 +63,7 @@ echo [3/4] Installing AnyDesk...
 echo [3/4] AnyDesk - install started >> "%LOG_FILE%"
 
 if "%HAS_WINGET%"=="1" (
-    winget install -e --id AnyDeskSoftwareGmbH.AnyDesk --silent --accept-package-agreements --accept-source-agreements
+    winget install -e --id AnyDesk.AnyDesk --silent --accept-package-agreements --accept-source-agreements
     call :ReportWinget "AnyDesk" !errorLevel!
 ) else (
     call :DirectDownload "https://download.anydesk.com/AnyDesk.exe" "AnyDesk.exe" "--install ""C:\Program Files (x86)\AnyDesk"" --start-with-win --create-shortcuts --create-desktop-icon --silent" "AnyDesk"
@@ -80,10 +80,10 @@ if "%HAS_WINGET%"=="1" (
     winget install -e --id Adobe.Acrobat.Reader.64-bit --silent --accept-package-agreements --accept-source-agreements
     call :ReportWinget "Adobe Acrobat Reader" !errorLevel!
 ) else (
-    :: Adobe rotates this URL roughly quarterly. If it 404s, find the latest at
-    :: https://www.adobe.com/devnet-docs/acrobatetk/tools/ReleaseNotesDC/index.html
-    :: and update the version segments below (both occurrences).
-    call :DirectDownload "https://ardownload2.adobe.com/pub/adobe/acrobat/win/AcrobatDC/2400520320/AcroRdrDC2400520320_en_US.exe" "AcrobatReader.exe" "/sAll /rs /msi EULA_ACCEPT=YES" "Adobe Acrobat Reader"
+    :: Adobe rotates this URL roughly quarterly. If it 404s, find the latest version at
+    :: https://github.com/microsoft/winget-pkgs/tree/master/manifests/a/Adobe/Acrobat/Reader/64-bit
+    :: pick the highest version folder, open the installer.yaml, and copy the InstallerUrl + Silent switches.
+    call :DirectDownload "https://ardownload2.adobe.com/pub/adobe/acrobat/win/AcrobatDC/2600121483/AcroRdrDCx642600121483_MUI.exe" "AcrobatReader.exe" "-sfx_nu /sAll /rs /msi" "Adobe Acrobat Reader"
 )
 echo.
 
@@ -135,17 +135,14 @@ set "_ARGS=%~3"
 set "_APP=%~4"
 
 echo Downloading !_APP!...
-powershell -NoProfile -Command "[Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12; $u='!_URL!'; $o='!_OUT!'; $wc=New-Object System.Net.WebClient; $global:dlOk=$false; $global:lastTime=Get-Date; $global:lastPct=-5; Register-ObjectEvent -InputObject $wc -EventName DownloadProgressChanged -Action {$global:lastTime=Get-Date; if($EventArgs.ProgressPercentage -ge $global:lastPct + 5){$global:lastPct=$EventArgs.ProgressPercentage; Write-Host ('  ' + $EventArgs.ProgressPercentage.ToString().PadLeft(3) + '%% | ' + [math]::Round($EventArgs.BytesReceived/1MB,1) + ' MB')}} | Out-Null; Register-ObjectEvent -InputObject $wc -EventName DownloadFileCompleted -Action {if($EventArgs.Error){Write-Host ('  ERROR: ' + $EventArgs.Error.Message); $global:dlOk=$false}elseif($EventArgs.Cancelled){$global:dlOk=$false}else{Write-Host '  Download complete.'; $global:dlOk=$true}} | Out-Null; $start=Get-Date; $wc.DownloadFileAsync([uri]$u,$o); while($wc.IsBusy){Start-Sleep -Milliseconds 500; $e=((Get-Date)-$start).TotalSeconds; $s=((Get-Date)-$global:lastTime).TotalSeconds; if($e -gt 600){Write-Host '  ABORT: total download timeout (600s) exceeded.'; $wc.CancelAsync(); Start-Sleep -Seconds 2; exit 2}; if($s -gt 60){Write-Host '  ABORT: no progress for 60 seconds.'; $wc.CancelAsync(); Start-Sleep -Seconds 2; exit 3}}; Start-Sleep -Milliseconds 1000; if($global:dlOk){exit 0}else{exit 1}"
+curl.exe -L --progress-bar --connect-timeout 30 --max-time 600 --speed-limit 1 --speed-time 60 -o "!_OUT!" "!_URL!"
 set "_DLEC=!errorLevel!"
 if !_DLEC! neq 0 (
-    if !_DLEC! equ 2 (
-        echo [FAIL] !_APP! download timed out after 10 minutes.
+    if !_DLEC! equ 28 (
+        echo [FAIL] !_APP! download timed out.
         echo [FAIL] !_APP! download timeout >> "%LOG_FILE%"
-    ) else if !_DLEC! equ 3 (
-        echo [FAIL] !_APP! download stalled - no progress for 60 seconds.
-        echo [FAIL] !_APP! download stalled >> "%LOG_FILE%"
     ) else (
-        echo [FAIL] !_APP! download failed.
+        echo [FAIL] !_APP! download failed ^(curl exit code !_DLEC!^).
         echo [FAIL] !_APP! download failed >> "%LOG_FILE%"
     )
     exit /b 1
