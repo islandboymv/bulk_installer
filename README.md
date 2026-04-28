@@ -1,38 +1,22 @@
 # Bulk App Installer
 
-Silently installs a standard set of apps on Windows in one run:
+A Windows batch script that silently installs a standard set of apps in one run:
 
 - **Google Chrome** (via winget)
 - **IdeaShare** (direct download)
 - **AnyDesk** (via winget)
 - **Adobe Acrobat Reader** (via winget)
 
-Two equivalent scripts are shipped:
-
-- **`install_apps.ps1`** — modern PowerShell version with colored status, banner, summary table, and auto-elevation. Recommended.
-- **`install_apps.bat`** — original batch version. Double-clickable, no PowerShell needed.
-
 ## Requirements
 
 - Windows 10 / 11
-- Administrator privileges (both scripts self-check; `.ps1` auto-elevates)
-- [winget](https://learn.microsoft.com/windows/package-manager/winget/) — preinstalled on recent Windows 10/11. If missing, install **App Installer** from the Microsoft Store. Without winget, Chrome, AnyDesk, and Acrobat fall back to direct download (where supported); IdeaShare always uses direct download.
+- Administrator privileges (the script self-checks and exits if not elevated)
+- [winget](https://learn.microsoft.com/windows/package-manager/winget/) — preinstalled on recent Windows 10/11. If missing, install **App Installer** from the Microsoft Store. Without winget, Chrome, AnyDesk, and Acrobat are skipped; IdeaShare still installs.
 
 ## Usage
 
-### PowerShell (recommended)
-
-1. Download `install_apps.ps1`.
-2. Right-click → **Run with PowerShell** (it self-elevates), or from an elevated PowerShell run:
-
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\install_apps.ps1
-```
-
-### Batch
-
 1. Download `install_apps.bat`.
-2. Right-click → **Run as administrator**.
+2. Right-click it and choose **Run as administrator**.
 3. Wait for all four sections to finish. A log is written to `%USERPROFILE%\Desktop\install_log.txt`.
 
 ### Quick download with curl
