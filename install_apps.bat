@@ -104,29 +104,28 @@ exit /b 0
 ::   Subroutines
 :: =============================================
 
-:: WingetInstall PackageId AppName
-:: Wraps `winget install`. If winget returns an unrecognized exit code (typically a stale
-:: source index — observed code 9020 in the wild), runs `source reset --force` and
-:: `source update` once per script run, then retries the install.
+rem WingetInstall PackageId AppName
+rem Retries once with `source reset --force` if winget returns an unrecognized exit code
+rem (e.g. stale-source code 9020).
 :WingetInstall
 set "_APP=%~2"
 
-call :_WingetTry "%~1"
+call :WingetTryOnce "%~1"
 set "_WEC=!errorLevel!"
-if "!_WEC!"=="0" goto :_WI_Done
-if "!_WEC!"=="-1978335135" goto :_WI_Done
-if "!_WEC!"=="-1978335189" goto :_WI_Done
+if "!_WEC!"=="0" goto WIDone
+if "!_WEC!"=="-1978335135" goto WIDone
+if "!_WEC!"=="-1978335189" goto WIDone
 
-if "!WINGET_RESET_DONE!"=="1" goto :_WI_Done
+if "!WINGET_RESET_DONE!"=="1" goto WIDone
 echo [INFO] !_APP! winget exit !_WEC! is unrecognized - resetting winget source and retrying...
 echo [INFO] !_APP! winget exit !_WEC! - source reset and retry >> "%LOG_FILE%"
 winget source reset --force
 winget source update
 set "WINGET_RESET_DONE=1"
-call :_WingetTry "%~1"
+call :WingetTryOnce "%~1"
 set "_WEC=!errorLevel!"
 
-:_WI_Done
+:WIDone
 if "!_WEC!"=="0" (
     echo [OK] !_APP! done.
     echo [OK] !_APP! installed >> "%LOG_FILE%"
@@ -143,13 +142,13 @@ if "!_WEC!"=="0" (
 exit /b 0
 
 
-:: _WingetTry PackageId
-:_WingetTry
+rem WingetTryOnce PackageId
+:WingetTryOnce
 winget install -e --id %~1 --silent --accept-package-agreements --accept-source-agreements
 exit /b !errorLevel!
 
 
-:: DirectDownload URL OutFile InstallerArgs AppName [FallbackURL]
+rem DirectDownload URL OutFile InstallerArgs AppName [FallbackURL]
 :DirectDownload
 set "_URL=%~1"
 set "_OUT=%TEMP_DIR%\%~2"
@@ -157,17 +156,17 @@ set "_ARGS=%~3"
 set "_APP=%~4"
 set "_URL2=%~5"
 
-call :_TryDownload "!_URL!" "!_OUT!" "!_APP!" && goto :_DD_Install
+call :TryDownload "!_URL!" "!_OUT!" "!_APP!" && goto DDInstall
 if not "!_URL2!"=="" (
     echo Retrying !_APP! from fallback URL...
     echo [INFO] !_APP! retrying from fallback >> "%LOG_FILE%"
-    call :_TryDownload "!_URL2!" "!_OUT!" "!_APP!" && goto :_DD_Install
+    call :TryDownload "!_URL2!" "!_OUT!" "!_APP!" && goto DDInstall
 )
 echo [FAIL] !_APP! download failed.
 echo [FAIL] !_APP! download failed >> "%LOG_FILE%"
 exit /b 1
 
-:_DD_Install
+:DDInstall
 echo Installing !_APP!...
 start /wait "" "!_OUT!" !_ARGS!
 set "_IEC=!errorLevel!"
@@ -181,8 +180,8 @@ if "!_IEC!"=="0" (
 exit /b 0
 
 
-:: _TryDownload URL OutFile AppName  -> exit 0 on success, 1 on any failure
-:_TryDownload
+rem TryDownload URL OutFile AppName  -- exit 0 on success, 1 on any failure
+:TryDownload
 set "_TU=%~1"
 set "_TO=%~2"
 set "_TA=%~3"
@@ -201,8 +200,7 @@ if not exist "!_TO!" (
     echo [WARN] !_TA! download missing.
     exit /b 1
 )
-:: Verify the download is a valid Windows PE executable (starts with MZ).
-:: Catches the common case of an HTML error page being saved with a .exe name.
+rem Verify download starts with PE 'MZ' header to catch HTML error pages.
 powershell -NoProfile -Command "try{$b=[IO.File]::ReadAllBytes('!_TO!'); if($b.Length -lt 2 -or $b[0] -ne 0x4D -or $b[1] -ne 0x5A){exit 1}else{exit 0}}catch{exit 1}"
 if !errorLevel! neq 0 (
     echo [WARN] !_TA! download is not a valid Windows executable.
