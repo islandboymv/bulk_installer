@@ -87,8 +87,13 @@ echo.
 :: -----------------------------------------
 ::  Cleanup
 :: -----------------------------------------
-echo Cleaning up temp files...
-rmdir /s /q "%TEMP_DIR%" >nul 2>&1
+if "!ANY_FAIL!"=="1" (
+    echo NOTE: One or more installs failed. Files kept in %TEMP_DIR% for manual retry.
+    echo NOTE: temp dir kept at %TEMP_DIR% for manual retry >> "%LOG_FILE%"
+) else (
+    echo Cleaning up temp files...
+    rmdir /s /q "%TEMP_DIR%" >nul 2>&1
+)
 
 echo.
 echo ============================================================
@@ -175,7 +180,9 @@ if "!_IEC!"=="0" (
     echo [OK] !_APP! installed >> "%LOG_FILE%"
 ) else (
     echo [WARN] !_APP! installer exited with code !_IEC!.
-    echo [WARN] !_APP! installer exit code !_IEC! >> "%LOG_FILE%"
+    echo         To retry manually, run: "!_OUT!"
+    echo [WARN] !_APP! installer exit code !_IEC! - kept at !_OUT! >> "%LOG_FILE%"
+    set "ANY_FAIL=1"
 )
 exit /b 0
 
@@ -205,5 +212,14 @@ powershell -NoProfile -Command "try{$b=[IO.File]::ReadAllBytes('!_TO!'); if($b.L
 if !errorLevel! neq 0 (
     echo [WARN] !_TA! download is not a valid Windows executable.
     exit /b 1
+)
+rem Log size + PE machine type so we can spot truncated downloads or arch mismatches.
+for %%S in ("!_TO!") do (
+    echo [INFO] !_TA! downloaded ^(%%~zS bytes^).
+    echo [INFO] !_TA! downloaded %%~zS bytes >> "%LOG_FILE%"
+)
+for /f "delims=" %%A in ('powershell -NoProfile -Command "try{$b=[IO.File]::ReadAllBytes('!_TO!'); $o=[BitConverter]::ToInt32($b,0x3C); $m=[BitConverter]::ToUInt16($b,$o+4); switch($m){0x8664{'x64'}0x14c{'x86'}0xAA64{'arm64'}default{'unknown(0x{0:X})' -f $m}}}catch{'unknown'}" 2^>nul') do (
+    echo [INFO] !_TA! arch=%%A, OS arch=%PROCESSOR_ARCHITECTURE%
+    echo [INFO] !_TA! arch=%%A, OS arch=%PROCESSOR_ARCHITECTURE% >> "%LOG_FILE%"
 )
 exit /b 0
