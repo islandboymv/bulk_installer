@@ -52,7 +52,11 @@ echo.
 echo [2/4] Installing IdeaShare...
 echo [2/4] IdeaShare - install started >> "%LOG_FILE%"
 
-call :DirectDownload "https://res-static.hc-cdn.cn/cloudbu-site/china/zh-cn/prudout/ec/share/V7.06.1.71/IdeaShare_Setup.exe" "IdeaShare_Setup.exe" "/S" "IdeaShare" "https://www.ideashare.us/download/IdeaShareSetup.exe"
+rem IdeaShare's /S silent flag is rejected by V7.06.1.71 (returns 9020 on
+rem this build), so we run without args. The installer UI will appear -
+rem click through it; the script waits and resumes after the installer exits.
+echo NOTE: IdeaShare installer will show a UI - click through it to continue.
+call :DirectDownload "https://res-static.hc-cdn.cn/cloudbu-site/china/zh-cn/prudout/ec/share/V7.06.1.71/IdeaShare_Setup.exe" "IdeaShare_Setup.exe" "" "IdeaShare" "https://www.ideashare.us/download/IdeaShareSetup.exe"
 echo.
 
 :: -----------------------------------------
