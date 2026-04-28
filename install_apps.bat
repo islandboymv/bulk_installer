@@ -52,19 +52,7 @@ echo.
 echo [2/4] Installing IdeaShare...
 echo [2/4] IdeaShare - install started >> "%LOG_FILE%"
 
-:: Silent /S requires 64-bit Windows 10 2004 (build 19041) or later per Huawei's docs.
-:: On older or 32-bit Windows the installer ignores /S and pops a UI, hanging the script.
-set "_OS_BUILD=0"
-for /f "tokens=6 delims=[]. " %%i in ('ver') do set "_OS_BUILD=%%i"
-set "_IDS_OK=0"
-if /i "%PROCESSOR_ARCHITECTURE%"=="AMD64" if !_OS_BUILD! geq 19041 set "_IDS_OK=1"
-
-if "!_IDS_OK!"=="1" (
-    call :DirectDownload "https://res-static.hc-cdn.cn/cloudbu-site/china/zh-cn/prudout/ec/share/V7.06.1.71/IdeaShare_Setup.exe" "IdeaShare_Setup.exe" "/S" "IdeaShare" "https://www.ideashare.us/download/IdeaShareSetup.exe"
-) else (
-    echo [SKIP] IdeaShare silent install needs 64-bit Windows 10 2004+. Skipping.
-    echo [SKIP] IdeaShare needs Win10 2004+ x64 - skipped >> "%LOG_FILE%"
-)
+call :DirectDownload "https://res-static.hc-cdn.cn/cloudbu-site/china/zh-cn/prudout/ec/share/V7.06.1.71/IdeaShare_Setup.exe" "IdeaShare_Setup.exe" "/S" "IdeaShare" "https://www.ideashare.us/download/IdeaShareSetup.exe"
 echo.
 
 :: -----------------------------------------
