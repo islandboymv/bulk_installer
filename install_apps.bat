@@ -148,8 +148,9 @@ exit /b 0
 
 
 rem WingetTryOnce PackageId
+rem Pin --source winget so a broken msstore (e.g. cert mismatch 0x8a15005e) doesn't abort the install.
 :WingetTryOnce
-winget install -e --id %~1 --silent --accept-package-agreements --accept-source-agreements
+winget install -e --id %~1 --source winget --silent --accept-package-agreements --accept-source-agreements
 exit /b !errorLevel!
 
 
